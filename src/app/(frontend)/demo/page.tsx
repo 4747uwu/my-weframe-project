@@ -1,6 +1,6 @@
 'use client'
 
-import DemoPageClient from '@/components/DemoPageClient'
+
 import React from 'react'
 
 interface FormField {
@@ -49,7 +49,7 @@ export default function FormDemoPage() {
     ]
   }
 
-  const forms: DemoForm[] = [demoForm]
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

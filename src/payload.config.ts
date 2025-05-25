@@ -13,7 +13,7 @@ import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
 import { Forms } from './collections/Forms'
 import { FormSubmissions } from './collections/FormSubmissions'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)

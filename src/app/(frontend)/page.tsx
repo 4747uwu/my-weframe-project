@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
 import { fileURLToPath } from 'url'
+import Link from 'next/link'
 
 import config from '@/payload.config'
 import './styles.css'
@@ -46,18 +47,12 @@ export default async function HomePage() {
           >
             Documentation
           </a>
-          <a
-            className="demo"
-            href="/demo"
-          >
+          <Link className="demo" href="/demo">
             View Demo
-          </a>
-          <a
-            className="contact"
-            href="/contact"
-          >
+          </Link>
+          <Link className="contact" href="/contact">
             Contact Form
-          </a>
+          </Link>
         </div>
       </div>
       <div className="footer">
