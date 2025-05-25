@@ -6,7 +6,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import { formBuilder } from '@payloadcms/plugin-form-builder'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 
 
 import { Users } from './collections/Users'
@@ -36,7 +36,7 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    formBuilder({
+    formBuilderPlugin({
       // Optionally redirect to a success page
       // redirectUrl: '/contact-success',
       // Optionally define fields that should be excluded from the form builder
