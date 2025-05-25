@@ -46,6 +46,18 @@ export default async function HomePage() {
           >
             Documentation
           </a>
+          <a
+            className="demo"
+            href="/demo"
+          >
+            View Demo
+          </a>
+          <a
+            className="contact"
+            href="/contact"
+          >
+            Contact Form
+          </a>
         </div>
       </div>
       <div className="footer">

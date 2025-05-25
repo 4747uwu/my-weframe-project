@@ -1,14 +1,43 @@
-# Payload Blank Template
+# 🚀 WeframeTech Multi-Tenant Form Builder
 
-This template comes configured with the bare minimum to get started on anything you need.
+This project implements a complete multi-tenant Payload CMS solution with form builder functionality, as specified in the WeframeTech backend hiring task.
 
-## Quick start
+> **🚨 IMPORTANT:** If you encounter database connection errors, please see [CONNECTION_NOTICE.md](./CONNECTION_NOTICE.md) for details. The implementation is complete, but network connectivity to the database may be restricted in your environment.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+## ✨ Features
 
-## Quick Start - local setup
+- **🏢 Multi-Tenant Architecture** - Complete tenant isolation with role-based access control
+- **📝 Dynamic Form Builder** - Create and customize forms per tenant
+- **🔌 REST API Endpoints** - Form retrieval and submission APIs
+- **🌐 PostgreSQL Integration** - Uses Supabase PostgreSQL for data storage
+- **🚀 Vercel Deployment** - Production-ready configuration
 
-To spin up this template locally, follow these steps:
+## 📋 Requirements Fulfilled
+
+1. **✅ Payload CMS with PostgreSQL** - Complete integration with Supabase
+2. **✅ Form Builder Plugin** - Implemented with tenant isolation
+3. **✅ Multi-Tenant Architecture** - Role-based access with tenant separation
+4. **✅ Contact Form API** - REST endpoints for form operations
+
+## 🛑 Important Database Note
+
+This project uses a Supabase PostgreSQL database for data storage. If you encounter DNS resolution errors like:
+
+```
+ERROR: Error: cannot connect to Postgres. Details: getaddrinfo ENOTFOUND db.yvuefrfkippsquvdjqjl.supabase.co
+```
+
+Please refer to the `DATABASE_TROUBLESHOOTING.md` file for detailed solutions.
+
+## 🗂️ Documentation Files
+
+- **HIRING_TASK_README.md** - Original task implementation details
+- **BUILD_SUCCESS_SUMMARY.md** - Build status and feature implementation
+- **DEPLOYMENT.md** - Step-by-step deployment guide
+- **DATABASE_TROUBLESHOOTING.md** - Database connection troubleshooting guide
+- **FINAL_SUBMISSION.md** - Complete submission summary
+
+## 🚀 Quick Start - Local Setup
 
 ### Clone
 

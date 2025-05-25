@@ -1,0 +1,97 @@
+# 🚀 WeframeTech Multi-Tenant Form Builder
+
+This project implements a complete multi-tenant Payload CMS solution with form builder functionality, as specified in the WeframeTech backend hiring task.
+
+## ✨ Features
+
+- **🏢 Multi-Tenant Architecture** - Complete tenant isolation with role-based access control
+- **📝 Dynamic Form Builder** - Create and customize forms per tenant
+- **🔌 REST API Endpoints** - Form retrieval and submission APIs
+- **🌐 PostgreSQL Integration** - Uses Supabase PostgreSQL for data storage
+- **🚀 Vercel Deployment** - Production-ready configuration
+
+## 📋 Requirements Fulfilled
+
+1. **✅ Payload CMS with PostgreSQL** - Complete integration with Supabase
+2. **✅ Form Builder Plugin** - Implemented with tenant isolation
+3. **✅ Multi-Tenant Architecture** - Role-based access with tenant separation
+4. **✅ Contact Form API** - REST endpoints for form operations
+
+## 🚀 Quick Start - Local Setup
+
+1. Clone this repository
+2. Install dependencies with `npm install`
+3. Create a PostgreSQL database with Supabase
+4. Copy `.env.sample` to `.env` and update with your database credentials
+5. Run the database migration with `npm run generate:types`
+6. Start the dev server with `npm run dev`
+7. Seed the database with `npm run seed`
+
+That's it! Visit `http://localhost:3000/admin` to get started!
+
+## 📊 Project Structure
+
+```
+my-weframe-project/
+├── src/
+│   ├── payload.config.ts          # Main Payload configuration
+│   ├── seed.ts                    # Database seeding script
+│   ├── collections/
+│   │   ├── Users.ts              # User management with roles
+│   │   ├── Tenants.ts            # Tenant management
+│   │   ├── Forms.ts              # Dynamic form builder
+│   │   ├── FormSubmissions.ts    # Submission storage
+│   │   └── Media.ts              # File uploads
+│   ├── app/
+│   │   ├── (frontend)/           # Public frontend pages
+│   │   ├── api/forms/            # REST API endpoints
+│   │   └── (payload)/            # Admin interface
+│   └── components/
+│       ├── ContactForm.tsx       # Dynamic form component
+│       └── DemoPageClient.tsx    # Demo showcase component
+```
+
+## 🔐 Default Login Credentials
+
+After running the seed script:
+
+```
+Super Admin: admin@weframetech.com / admin123
+Tenant Admin: tenant@weframetech.com / tenant123
+```
+
+## 🔌 API Endpoints
+
+### GET /api/forms
+Retrieve forms by tenant or ID
+```
+/api/forms?tenant=weframetech-demo
+/api/forms?id=form-id
+```
+
+### POST /api/forms
+Submit form data
+```json
+{
+  "formId": "form-id",
+  "submissionData": {
+    "fullName": "John Doe",
+    "email": "john@example.com",
+    "message": "Hello world!"
+  }
+}
+```
+
+## 🚀 Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+## 📚 Documentation
+
+- [FINAL_SUBMISSION.md](./FINAL_SUBMISSION.md) - Complete task submission details
+- [BUILD_SUCCESS_SUMMARY.md](./BUILD_SUCCESS_SUMMARY.md) - Build status and feature overview
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment instructions
+
+## 🌟 Additional Notes
+
+This project showcases a comprehensive multi-tenant architecture with Payload CMS, demonstrating how to build scalable, secure form management systems with proper access control and data isolation between tenants.
