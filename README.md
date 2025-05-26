@@ -19,15 +19,8 @@ This project implements a complete multi-tenant Payload CMS solution with form b
 3. **✅ Multi-Tenant Architecture** - Role-based access with tenant separation
 4. **✅ Contact Form API** - REST endpoints for form operations
 
-## 🛑 Important Database Note
 
-This project uses a Supabase PostgreSQL database for data storage. If you encounter DNS resolution errors like:
 
-```
-ERROR: Error: cannot connect to Postgres. Details: getaddrinfo ENOTFOUND db.yvuefrfkippsquvdjqjl.supabase.co
-```
-
-Please refer to the `DATABASE_TROUBLESHOOTING.md` file for detailed solutions.
 
 ## 🗂️ Documentation Files
 
