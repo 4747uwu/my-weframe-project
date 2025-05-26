@@ -28,6 +28,15 @@
       ],
       "@payload-config": [
         "./src/payload.config.ts"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
       ]
     },
     "target": "ES2022"

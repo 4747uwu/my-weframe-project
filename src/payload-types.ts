@@ -68,12 +68,10 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    media: Media;
     tenants: Tenant;
+    media: Media;
     forms: Form;
     'form-submissions': FormSubmission;
-    'forms-builtin': FormsBuiltin;
-    'form-submissions-builtin': FormSubmissionsBuiltin;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -81,12 +79,10 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
-    'forms-builtin': FormsBuiltinSelect<false> | FormsBuiltinSelect<true>;
-    'form-submissions-builtin': FormSubmissionsBuiltinSelect<false> | FormSubmissionsBuiltinSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -191,97 +187,6 @@ export interface Media {
  * via the `definition` "forms".
  */
 export interface Form {
-  id: number;
-  title: string;
-  tenant?: (number | null) | Tenant;
-  fields: {
-    name: string;
-    label: string;
-    type: 'text' | 'email' | 'textarea' | 'number' | 'checkbox' | 'select';
-    required?: boolean | null;
-    placeholder?: string | null;
-    options?:
-      | {
-          label: string;
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    id?: string | null;
-  }[];
-  confirmationType?: ('message' | 'redirect') | null;
-  confirmationMessage?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  redirect?: {
-    url: string;
-  };
-  emails?:
-    | {
-        emailTo: string;
-        emailFrom?: string | null;
-        replyTo?: string | null;
-        emailSubject?: string | null;
-        message?: {
-          root: {
-            type: string;
-            children: {
-              type: string;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions".
- */
-export interface FormSubmission {
-  id: number;
-  form: number | Form;
-  tenant: number | Tenant;
-  submissionData:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  submittedAt: string;
-  ipAddress?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms-builtin".
- */
-export interface FormsBuiltin {
   id: number;
   title: string;
   fields?:
@@ -448,16 +353,17 @@ export interface FormsBuiltin {
         id?: string | null;
       }[]
     | null;
+  tenant: number | Tenant;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions-builtin".
+ * via the `definition` "form-submissions".
  */
-export interface FormSubmissionsBuiltin {
+export interface FormSubmission {
   id: number;
-  form: number | FormsBuiltin;
+  form: number | Form;
   submissionData?:
     | {
         field: string;
@@ -480,12 +386,12 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
-        relationTo: 'media';
-        value: number | Media;
-      } | null)
-    | ({
         relationTo: 'tenants';
         value: number | Tenant;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'forms';
@@ -494,14 +400,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'form-submissions';
         value: number | FormSubmission;
-      } | null)
-    | ({
-        relationTo: 'forms-builtin';
-        value: number | FormsBuiltin;
-      } | null)
-    | ({
-        relationTo: 'form-submissions-builtin';
-        value: number | FormSubmissionsBuiltin;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -566,24 +464,6 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tenants_select".
  */
 export interface TenantsSelect<T extends boolean = true> {
@@ -602,66 +482,27 @@ export interface TenantsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms_select".
  */
 export interface FormsSelect<T extends boolean = true> {
-  title?: T;
-  tenant?: T;
-  fields?:
-    | T
-    | {
-        name?: T;
-        label?: T;
-        type?: T;
-        required?: T;
-        placeholder?: T;
-        options?:
-          | T
-          | {
-              label?: T;
-              value?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  confirmationType?: T;
-  confirmationMessage?: T;
-  redirect?:
-    | T
-    | {
-        url?: T;
-      };
-  emails?:
-    | T
-    | {
-        emailTo?: T;
-        emailFrom?: T;
-        replyTo?: T;
-        emailSubject?: T;
-        message?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions_select".
- */
-export interface FormSubmissionsSelect<T extends boolean = true> {
-  form?: T;
-  tenant?: T;
-  submissionData?: T;
-  submittedAt?: T;
-  ipAddress?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms-builtin_select".
- */
-export interface FormsBuiltinSelect<T extends boolean = true> {
   title?: T;
   fields?:
     | T
@@ -787,14 +628,15 @@ export interface FormsBuiltinSelect<T extends boolean = true> {
         message?: T;
         id?: T;
       };
+  tenant?: T;
   updatedAt?: T;
   createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions-builtin_select".
+ * via the `definition` "form-submissions_select".
  */
-export interface FormSubmissionsBuiltinSelect<T extends boolean = true> {
+export interface FormSubmissionsSelect<T extends boolean = true> {
   form?: T;
   submissionData?:
     | T

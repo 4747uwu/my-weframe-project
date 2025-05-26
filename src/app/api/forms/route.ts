@@ -1,6 +1,20 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
+// Helper function to get client IP
+function getClientIP(request: Request) {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIP = request.headers.get('x-real-ip')
+  
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  if (realIP) {
+    return realIP
+  }
+  return '127.0.0.1'
+}
+
 export async function GET(request: Request) {
   try {
     const payload = await getPayload({ config })
@@ -9,28 +23,25 @@ export async function GET(request: Request) {
     const formId = searchParams.get('id')
 
     if (formId) {
-      // Get specific form
       const form = await payload.findByID({
         collection: 'forms',
         id: formId,
-        depth: 2, // Include tenant information
+        depth: 2,
       })
       return Response.json({ form })
     }
 
     if (tenantSlug) {
-      // Get forms by tenant
       const forms = await payload.find({
         collection: 'forms',
         where: {
           'tenant.slug': { equals: tenantSlug }
         },
-        depth: 2, // Include tenant information
+        depth: 2,
       })
       return Response.json({ forms: forms.docs })
     }
 
-    // Get all forms (for super admin)
     const forms = await payload.find({
       collection: 'forms',
       depth: 2,
@@ -48,7 +59,7 @@ export async function POST(request: Request) {
     const payload = await getPayload({ config })
     const { formId, submissionData } = await request.json()
 
-    console.log('Received submission for form ID:', formId) // DEBUG
+    console.log('Received submission for form ID:', formId)
 
     // Verify form exists
     const form = await payload.findByID({
@@ -56,24 +67,22 @@ export async function POST(request: Request) {
       id: formId,
     })
 
-    console.log('Found form:', form) // DEBUG
+    console.log('Found form:', form)
 
     if (!form) {
       return Response.json({ error: 'Form not found' }, { status: 404 })
     }
 
-    // Create form submission - tenant will be auto-assigned by the collection hook
+    // Create form submission using Form Builder plugin's collection
     const submission = await payload.create({
       collection: 'form-submissions',
       data: {
         form: formId,
-        // Don't manually set tenant - let the hook handle it
-        submissionData,
-        submittedAt: new Date(),
+        submissionData, // Form Builder expects the raw object, not formatted array
       },
     })
 
-    console.log('Created submission:', submission) // DEBUG
+    console.log('Created submission:', submission)
 
     return Response.json({ 
       success: true, 

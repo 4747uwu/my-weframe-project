@@ -2,13 +2,11 @@ import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from './payload.config'
 
-async function seed() {
+const seed = async (): Promise<void> => {
   const payload = await getPayload({ config })
 
   try {
-    console.log('Starting database seeding...')
-
-    // Create a sample tenant
+    // Create tenant first
     const tenant = await payload.create({
       collection: 'tenants',
       data: {
@@ -23,40 +21,40 @@ async function seed() {
       },
     })
 
-    console.log('Created tenant:', tenant.name)
+    console.log('Created tenant:', tenant.id)
 
-    // Create a super admin user
-    const superAdmin = await payload.create({
+    // Create admin user
+    const adminUser = await payload.create({
       collection: 'users',
       data: {
         email: 'admin@weframetech.com',
         password: 'admin123',
+        firstName: 'Admin',
+        lastName: 'User',
         role: 'super-admin',
-        firstName: 'Super',
-        lastName: 'Admin',
       },
     })
 
-    console.log('Created super admin user:', superAdmin.email)
+    console.log('Created admin user:', adminUser.id)
 
-    // Create a tenant admin user
+    // Create tenant admin
     const tenantAdmin = await payload.create({
       collection: 'users',
       data: {
         email: 'tenant@weframetech.com',
         password: 'tenant123',
-        role: 'tenant-admin',
-        tenant: tenant.id,
         firstName: 'Tenant',
         lastName: 'Admin',
+        role: 'tenant-admin',
+        tenant: tenant.id,
       },
     })
 
-    console.log('Created tenant admin user:', tenantAdmin.email)
+    console.log('Created tenant admin:', tenantAdmin.id)
 
-    // Create a sample contact form
+    // Create contact form using Form Builder plugin
     const contactForm = await payload.create({
-      collection: 'forms',
+      collection: 'forms', // Use Form Builder plugin's collection
       data: {
         title: 'Contact Us Form',
         tenant: tenant.id,
@@ -88,7 +86,8 @@ async function seed() {
             type: 'textarea',
             required: true,
             placeholder: 'Tell us how we can help you...',
-          },        ],
+          },
+        ],
         confirmationType: 'message',
         confirmationMessage: {
           root: {
@@ -96,46 +95,40 @@ async function seed() {
             children: [
               {
                 type: 'paragraph',
-                version: 1,
-                direction: 'ltr',
-                format: '',
-                indent: 0,
                 children: [
                   {
                     type: 'text',
-                    version: 1,
-                    text: 'Thank you for contacting us! We will get back to you soon.',
-                    format: 0,
-                    style: '',
-                    mode: 'normal',
-                    detail: 0,
+                    text: 'Thank you for your message! We will get back to you soon.',
                   },
                 ],
               },
             ],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            version: 1,
           },
         },
+        emails: [],
       },
     })
 
-    console.log('Created contact form:', contactForm.title)
-
-    console.log('Database seeding completed successfully!')
-    console.log('\nLogin credentials:')
-    console.log('Super Admin: admin@weframetech.com / admin123')
-    console.log('Tenant Admin: tenant@weframetech.com / tenant123')
-    console.log('\nContact Form ID:', contactForm.id)
+    console.log('Created contact form:', contactForm.id)
+    console.log('✅ Seed completed successfully!')
 
   } catch (error) {
-    console.error('Error seeding database:', error)
+    console.error('❌ Seed failed:', error)
+    throw error
   }
-  
-  // Important: Force exit the process
-  process.exit(0)
 }
 
-seed()
+export default seed
+
+// Run seed if called directly
+if (process.argv[1] === __filename) {
+  seed()
+    .then(() => {
+      console.log('Seed completed!')
+      process.exit(0)
+    })
+    .catch((error) => {
+      console.error('Seed failed:', error)
+      process.exit(1)
+    })
+}

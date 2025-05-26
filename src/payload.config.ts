@@ -1,19 +1,19 @@
 // storage-adapter-import-placeholder
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import sharp from 'sharp'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import sharp from 'sharp'
+import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 
+// Import your collections
 import { Users } from './collections/Users'
-import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
-import { Forms } from './collections/Forms'
-import { FormSubmissions } from './collections/FormSubmissions'
-
+// Remove your custom Forms collection import
+// import { Forms } from './collections/Forms'
+import { Media } from './collections/Media'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -25,7 +25,13 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Tenants, Forms, FormSubmissions],
+  collections: [
+    Users,
+    Tenants,
+    // Remove your custom Forms collection from here
+    // Forms,
+    Media,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -38,43 +44,76 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    payloadCloudPlugin(),
     formBuilderPlugin({
-      fields: {
-        payment: false, // Disable payment field for this demo
-      },
+      // Configure the Form Builder plugin to handle multi-tenancy
       formOverrides: {
-        slug: 'forms-builtin', // Different slug to avoid conflicts with our custom Forms collection
+        slug: 'forms', // Use the default 'forms' slug
         access: {
-          read: ({ req: { user } }) => {
-            if ((user as { role?: string })?.role === 'super-admin') {
-              return true
+          read: () => true,
+          create: ({ req: { user } }) => {
+            return user?.role === 'tenant-admin' || user?.role === 'super-admin'
+          },
+          update: ({ req: { user } }) => {
+            if (user?.role === 'super-admin') return true
+            if (user?.role === 'tenant-admin') {
+              return {
+                tenant: { equals: user.tenant?.id }
+              }
             }
-            return {
-              tenant: {
-                equals: (user as { tenant?: string })?.tenant,
-              },
-            }
+            return false
+          },
+          delete: ({ req: { user } }) => {
+            return user?.role === 'super-admin'
           },
         },
+        // Add tenant field to forms
+        fields: ({ defaultFields }) => [
+          ...defaultFields,
+          {
+            name: 'tenant',
+            type: 'relationship',
+            relationTo: 'tenants',
+            required: true,
+            admin: {
+              position: 'sidebar',
+            },
+            hooks: {
+              beforeChange: [
+                ({ req, data }) => {
+                  // Auto-assign tenant for tenant admins
+                  if (req.user?.role === 'tenant-admin' && req.user.tenant) {
+                    return req.user.tenant.id
+                  }
+                  return data
+                },
+              ],
+            },
+          },
+        ],
       },
       formSubmissionOverrides: {
-        slug: 'form-submissions-builtin',
+        slug: 'form-submissions',
         access: {
+          create: () => true, // Allow public submissions
           read: ({ req: { user } }) => {
-            if ((user as { role?: string })?.role === 'super-admin') {
-              return true
-            }
+            if (!user) return false
+            if (user.role === 'super-admin') return true
+            
+            // Tenant admins can only see their own submissions
             return {
-              tenant: {
-                equals: (user as { tenant?: string })?.tenant,
-              },
+              'form.tenant': { equals: user.tenant?.id }
             }
+          },
+          update: ({ req: { user } }) => {
+            return user?.role === 'super-admin'
+          },
+          delete: ({ req: { user } }) => {
+            return user?.role === 'super-admin'
           },
         },
       },
     }),
-    // storage-adapter-placeholder
+    payloadCloudPlugin(),
   ],
 })
 
