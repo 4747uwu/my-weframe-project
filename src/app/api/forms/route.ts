@@ -1,117 +1,91 @@
-import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { NextRequest, NextResponse } from 'next/server'
+import config from '@payload-config'
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
-    const payload = await getPayload({ config: configPromise })
+    const payload = await getPayload({ config })
     const { searchParams } = new URL(request.url)
     const tenantSlug = searchParams.get('tenant')
     const formId = searchParams.get('id')
 
-    if (!tenantSlug && !formId) {
-      return NextResponse.json(
-        { error: 'Either tenant slug or form ID is required' },
-        { status: 400 }
-      )
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereQuery: any = {}
-
     if (formId) {
-      whereQuery.id = { equals: formId }
-    } else if (tenantSlug) {
-      // Find tenant first
-      const tenants = await payload.find({
-        collection: 'tenants',
-        where: {
-          slug: { equals: tenantSlug },
-        },
-        limit: 1,
+      // Get specific form
+      const form = await payload.findByID({
+        collection: 'forms',
+        id: formId,
+        depth: 2, // Include tenant information
       })
-
-      if (tenants.docs.length === 0) {
-        return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
-      }
-
-      whereQuery.tenant = { equals: tenants.docs[0].id }
+      return Response.json({ form })
     }
 
+    if (tenantSlug) {
+      // Get forms by tenant
+      const forms = await payload.find({
+        collection: 'forms',
+        where: {
+          'tenant.slug': { equals: tenantSlug }
+        },
+        depth: 2, // Include tenant information
+      })
+      return Response.json({ forms: forms.docs })
+    }
+
+    // Get all forms (for super admin)
     const forms = await payload.find({
       collection: 'forms',
-      where: whereQuery,
+      depth: 2,
     })
-
-    return NextResponse.json({ forms: forms.docs })
+    
+    return Response.json({ forms: forms.docs })
   } catch (error) {
     console.error('Error fetching forms:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Failed to fetch forms' }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const payload = await getPayload({ config: configPromise })
-    const body = await request.json()
-    const { formId, submissionData } = body
+    const payload = await getPayload({ config })
+    const { formId, submissionData } = await request.json()
 
-    if (!formId || !submissionData) {
-      return NextResponse.json(
-        { error: 'Form ID and submission data are required' },
-        { status: 400 }
-      )
-    }
+    console.log('Received submission for form ID:', formId) // DEBUG
 
-    // Verify form exists and is active
+    // Verify form exists
     const form = await payload.findByID({
       collection: 'forms',
       id: formId,
     })
 
+    console.log('Found form:', form) // DEBUG
+
     if (!form) {
-      return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+      return Response.json({ error: 'Form not found' }, { status: 404 })
     }
 
-    // Get client IP and user agent
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
-
-    // Create form submission
+    // Create form submission - tenant will be auto-assigned by the collection hook
     const submission = await payload.create({
       collection: 'form-submissions',
       data: {
         form: formId,
+        // Don't manually set tenant - let the hook handle it
         submissionData,
-        submitterIP: clientIP,
-        submitterUserAgent: userAgent,
+        submittedAt: new Date(),
       },
-      context: { payload }, // Pass payload in context for hooks
     })
 
-    // Send confirmation emails if configured
-    if (form.emails && form.emails.length > 0) {
-      // Here you would implement email sending logic
-      // For this demo, we'll just log it
-      console.log('Would send emails to:', form.emails)
-    }
+    console.log('Created submission:', submission) // DEBUG
 
-    return NextResponse.json({
-      success: true,
-      submissionId: submission.id,
-      message: form.confirmationMessage || 'Thank you for your submission!',
-      redirectUrl: form.confirmationType === 'redirect' ? form.redirect?.url : null,
+    return Response.json({ 
+      success: true, 
+      id: submission.id,
+      message: 'Form submitted successfully' 
     })
+
   } catch (error) {
     console.error('Error creating form submission:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return Response.json({ 
+      error: 'Failed to submit form',
+      details: error.message 
+    }, { status: 500 })
   }
 }

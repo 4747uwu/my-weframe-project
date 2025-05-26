@@ -262,7 +262,7 @@ export interface Form {
 export interface FormSubmission {
   id: number;
   form: number | Form;
-  tenant?: (number | null) | Tenant;
+  tenant: number | Tenant;
   submissionData:
     | {
         [k: string]: unknown;
@@ -272,9 +272,8 @@ export interface FormSubmission {
     | number
     | boolean
     | null;
-  submittedAt?: string | null;
-  submitterIP?: string | null;
-  submitterUserAgent?: string | null;
+  submittedAt: string;
+  ipAddress?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -654,8 +653,7 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
   tenant?: T;
   submissionData?: T;
   submittedAt?: T;
-  submitterIP?: T;
-  submitterUserAgent?: T;
+  ipAddress?: T;
   updatedAt?: T;
   createdAt?: T;
 }

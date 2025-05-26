@@ -2,67 +2,9 @@ import type { CollectionConfig } from 'payload'
 
 export const FormSubmissions: CollectionConfig = {
   slug: 'form-submissions',
-  admin: {
-    useAsTitle: 'form',
-    group: 'Forms',
-    defaultColumns: ['form', 'tenant', 'submittedAt'],
-  },
-  access: {
-    create: () => true, // Allow public form submissions
-    read: ({ req: { user } }) => {
-      if (user?.role === 'super-admin') {
-        return true
-      }
-      // Users can only access submissions from their tenant
-      return {
-        tenant: {
-          equals: user?.tenant,
-        },
-      }
-    },
-    update: ({ req: { user } }) => {
-      if (user?.role === 'super-admin') {
-        return true
-      }
-      return {
-        tenant: {
-          equals: user?.tenant,
-        },
-      }
-    },
-    delete: ({ req: { user } }) => {
-      if (user?.role === 'super-admin') {
-        return true
-      }
-      return {
-        tenant: {
-          equals: user?.tenant,
-        },
-      }
-    },
-  },  hooks: {
-    beforeChange: [
-      async ({ operation, data, req }) => {
-        if (operation === 'create') {
-          // Auto-assign tenant based on the form
-          if (data.form && req?.payload) {
-            try {
-              const form = await req.payload.findByID({
-                collection: 'forms',
-                id: data.form,
-              })
-              if (form?.tenant) {
-                data.tenant = form.tenant
-              }
-            } catch (error) {
-              console.error('Error fetching form for tenant assignment:', error)
-            }
-          }
-          data.submittedAt = new Date().toISOString()
-        }
-        return data
-      },
-    ],
+  labels: {
+    singular: 'Form Submission',
+    plural: 'Form Submissions',
   },
   fields: [
     {
@@ -74,9 +16,10 @@ export const FormSubmissions: CollectionConfig = {
     {
       name: 'tenant',
       type: 'relationship',
-      relationTo: 'tenants',
+      relationTo: 'tenants', // Make sure this matches your tenants collection slug
+      required: true,
       admin: {
-        readOnly: true,
+        readOnly: true, // Auto-assigned from form
       },
     },
     {
@@ -87,26 +30,62 @@ export const FormSubmissions: CollectionConfig = {
     {
       name: 'submittedAt',
       type: 'date',
-      admin: {
-        readOnly: true,
-        date: {
-          pickerAppearance: 'dayAndTime',
-        },
-      },
-    },
-    {
-      name: 'submitterIP',
-      type: 'text',
+      required: true,
       admin: {
         readOnly: true,
       },
     },
     {
-      name: 'submitterUserAgent',
+      name: 'ipAddress',
       type: 'text',
       admin: {
         readOnly: true,
       },
     },
   ],
+  // Auto-assign tenant from form
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        if (operation === 'create' && data.form) {
+          try {
+            const form = await req.payload.findByID({
+              collection: 'forms',
+              id: data.form,
+              depth: 1,
+            })
+            
+            if (form && form.tenant) {
+              data.tenant = form.tenant.id || form.tenant
+            }
+          } catch (error) {
+            console.error('Error auto-assigning tenant:', error)
+          }
+        }
+        return data
+      },
+    ],
+  },
+  access: {
+    create: () => true, // Allow public form submissions
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === 'super-admin') return true
+      
+      // Tenant admins can only see their own submissions
+      return {
+        tenant: { equals: user.tenant?.id }
+      }
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      return user.role === 'super-admin' || user.role === 'tenant-admin'
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return user.role === 'super-admin'
+    },
+  },
 }
+
+export default FormSubmissions

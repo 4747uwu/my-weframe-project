@@ -1,6 +1,7 @@
 'use client'
 
 import ContactForm from '@/components/ContactForm'
+import { useEffect, useState } from 'react'
 
 // Sample contact form data - in production this would come from your CMS
 const contactFormData = {
@@ -39,6 +40,31 @@ const contactFormData = {
 }
 
 export default function ContactPage() {
+  const [form, setForm] = useState(null)
+  
+  useEffect(() => {
+    // Fetch the contact form
+    fetch('/api/forms?tenant=weframetech-demo')
+      .then(res => res.json())
+      .then(data => {
+        console.log('API Response:', data) // DEBUG: See the full response
+        console.log('Available forms:', data.docs || data.forms) // DEBUG: Check structure
+        
+        const forms = data.docs || data.forms || []
+        if (forms.length > 0) {
+          const contactForm = forms[0]
+          console.log('Using form:', contactForm) // DEBUG: Check the full form object
+          setForm(contactForm)
+        } else {
+          console.log('No forms found')
+        }
+      })
+      .catch(err => console.error('Error fetching forms:', err))
+  }, [])
+
+  if (!form) {
+    return <div>Loading form...</div>
+  }
 
   return (
     <div className="contact-page">
@@ -49,9 +75,9 @@ export default function ContactPage() {
         
         <div className="form-section">
           <ContactForm 
-            formId={contactFormData.id}
-            fields={contactFormData.fields}
-            title={contactFormData.title}
+            formId={form.id}  // Make sure this matches the database
+            fields={form.fields} 
+            title={form.title}
           />
         </div>
 
