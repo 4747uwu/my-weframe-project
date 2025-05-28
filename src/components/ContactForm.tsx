@@ -18,7 +18,6 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -27,8 +26,8 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
 
     // Validate required fields
     const missingFields = fields
-      .filter(field => field.required && !formData[field.name]?.trim())
-      .map(field => field.label)
+      .filter((field) => field.required && !formData[field.name]?.trim())
+      .map((field) => field.label)
 
     if (missingFields.length > 0) {
       setErrorMessage(`Please fill in required fields: ${missingFields.join(', ')}`)
@@ -37,8 +36,20 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
     }
 
     try {
-      console.log('Submitting form:', { formId, submissionData: formData })
+      // Enhanced debugging - show exactly what we're sending
+      const formattedData = Object.keys(formData).map((key) => ({
+        field: key,
+        label: fields.find((f) => f.name === key)?.label || key,
+        value: formData[key],
+      }))
 
+      console.log('Submitting form:', {
+        formId,
+        rawData: formData,
+        formattedData,
+      })
+
+      // Keep original format for compatibility
       const response = await fetch('/api/forms', {
         method: 'POST',
         headers: {
@@ -46,7 +57,7 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
         },
         body: JSON.stringify({
           formId,
-          submissionData: formData,
+          submissionData: formData, // Send as object, not array
         }),
       })
 
@@ -71,9 +82,9 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
   }
 
   const handleInputChange = (fieldName: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [fieldName]: value
+      [fieldName]: value,
     }))
   }
 
@@ -84,25 +95,17 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       value: formData[field.name] || '',
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => 
-        handleInputChange(field.name, e.target.value),
+      onChange: (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+      ) => handleInputChange(field.name, e.target.value),
     }
 
     switch (field.type) {
       case 'textarea':
-        return (
-          <textarea
-            {...commonProps}
-            rows={4}
-            className="form-input"
-          />
-        )
+        return <textarea {...commonProps} rows={4} className="form-input" />
       case 'select':
         return (
-          <select
-            {...commonProps}
-            className="form-input"
-          >
+          <select {...commonProps} className="form-input">
             <option value="">Select {field.label}</option>
             {field.options?.map((option, index) => (
               <option key={index} value={option.value}>
@@ -112,22 +115,10 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
           </select>
         )
       case 'email':
-        return (
-          <input
-            {...commonProps}
-            type="email"
-            className="form-input"
-          />
-        )
+        return <input {...commonProps} type="email" className="form-input" />
       case 'text':
       default:
-        return (
-          <input
-            {...commonProps}
-            type="text"
-            className="form-input"
-          />
-        )
+        return <input {...commonProps} type="text" className="form-input" />
     }
   }
 
@@ -137,10 +128,7 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
         <div className="success-icon">✅</div>
         <h3>Thank you!</h3>
         <p>Your message has been sent successfully. We'll get back to you soon.</p>
-        <button 
-          onClick={() => setSubmitStatus('idle')} 
-          className="reset-button"
-        >
+        <button onClick={() => setSubmitStatus('idle')} className="reset-button">
           Send Another Message
         </button>
 
@@ -189,9 +177,7 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
   return (
     <div className="form-container">
       <h2 className="form-title">{title}</h2>
-      
-  
-      
+
       <form onSubmit={handleSubmit} className="contact-form">
         {fields && fields.length > 0 ? (
           fields.map((field, index) => {
@@ -208,8 +194,10 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
           })
         ) : (
           <div style={{ background: '#ffcccc', padding: '1rem', borderRadius: '4px' }}>
-            <strong>No fields found!</strong><br/>
-            Fields prop: {JSON.stringify(fields)}<br/>
+            <strong>No fields found!</strong>
+            <br />
+            Fields prop: {JSON.stringify(fields)}
+            <br />
             Check if the API is returning the correct form structure.
           </div>
         )}
@@ -221,11 +209,7 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
           </div>
         )}
 
-        <button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="submit-button"
-        >
+        <button type="submit" disabled={isSubmitting} className="submit-button">
           {isSubmitting ? (
             <>
               <span className="spinner"></span>
