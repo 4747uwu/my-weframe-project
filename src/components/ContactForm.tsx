@@ -36,20 +36,12 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
     }
 
     try {
-      // Enhanced debugging - show exactly what we're sending
-      const formattedData = Object.keys(formData).map((key) => ({
-        field: key,
-        label: fields.find((f) => f.name === key)?.label || key,
-        value: formData[key],
+      // Convert formData object to array format for submission
+      const submissionDataArray = Object.entries(formData).map(([field, value]) => ({
+        field,
+        value,
       }))
 
-      console.log('Submitting form:', {
-        formId,
-        rawData: formData,
-        formattedData,
-      })
-
-      // Keep original format for compatibility
       const response = await fetch('/api/forms', {
         method: 'POST',
         headers: {
@@ -57,7 +49,7 @@ export default function ContactForm({ formId, fields, title }: ContactFormProps)
         },
         body: JSON.stringify({
           formId,
-          submissionData: formData, // Send as object, not array
+          submissionData: submissionDataArray, // Send data in array format
         }),
       })
 
